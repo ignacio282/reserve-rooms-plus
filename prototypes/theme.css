@@ -1,0 +1,75 @@
+/* Reserve Rooms+ theme - warm paper + deep green, Geist only.
+   Durable output of /prototype: port these tokens into app/globals.css @theme
+   in the first UI feature. Status colors pair with icons and fills; never rely
+   on color alone. Text/background pairs below target WCAG 2.2 AA (>= 4.5:1). */
+
+:root {
+  /* surfaces */
+  --bg: #f7f4ee;            /* page: warm paper            */
+  --surface: #fffdf9;       /* cards, bars, inputs          */
+  --surface-2: #f1ece3;     /* sunken areas, headers        */
+  --border: #e3dccf;        /* hairlines                    */
+  --border-strong: #cbc1ae; /* inputs, hour lines           */
+
+  /* text */
+  --text: #23201b;          /* ink                          */
+  --muted: #625a4f;         /* secondary, labels            */
+  --faint: #8f8576;         /* hints, non-essential only    */
+
+  /* accent: deep bookbinding green */
+  --accent: #1f5c3f;        /* primary action, focus, live  */
+  --accent-hover: #174a32;
+  --accent-ink: #ffffff;    /* text on accent               */
+  --accent-soft: #e2eee6;   /* available tint               */
+
+  /* booking statuses (text / fill / edge) */
+  --st-booked-text: #7a4f00;     /* Booked - awaiting check-in */
+  --st-booked-bg: #fbf0d9;
+  --st-booked-edge: #d29a2e;
+
+  --st-checked-text: #1b4679;    /* Checked in */
+  --st-checked-bg: #dde8f6;
+  --st-checked-edge: #3a6ea5;
+
+  --st-released-text: #8f3417;   /* No-show - released */
+  --st-released-bg: #f8e4da;
+  --st-released-edge: #c4643f;
+
+  --st-cancelled-text: #645d53;  /* Cancelled */
+  --st-cancelled-bg: #eeeae3;
+  --st-cancelled-edge: #c9c1b4;
+
+  --st-completed-text: #3f4a55;  /* Completed */
+  --st-completed-bg: #e6e9ec;
+  --st-completed-edge: #9aa5b0;
+
+  --st-available-edge: var(--accent);
+
+  /* live */
+  --now-line: #b4321c;
+  --changed-glow: rgba(31, 92, 63, 0.35);
+
+  /* type */
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 1.875rem;
+
+  /* scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --shadow: 0 1px 2px rgba(35, 32, 27, 0.06), 0 4px 16px rgba(35, 32, 27, 0.06);
+  --shadow-lg: 0 2px 6px rgba(35, 32, 27, 0.08), 0 16px 40px rgba(35, 32, 27, 0.14);
+  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+}

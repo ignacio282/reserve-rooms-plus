@@ -127,9 +127,10 @@ of the switch; the skills and `ai-interaction.md` only point back here.
 - Run them via the project's test command (see Commands in `AGENTS.md`), not a
   hardcoded tool name.
 
-Stack binding: when `/tests` adds a runner, use Vitest, `vi.mock()` for external
-dependencies, and `vi.useFakeTimers()` for time-dependent logic. Current status:
-no test runner configured, so no test gate.
+Stack binding: Vitest (`vitest.config.mts`, node environment, `@/` alias). Use
+`vi.mock()` for external dependencies (Supabase client) and inject or fake the
+clock (`vi.useFakeTimers()` or a passed-in `now`) for time-dependent logic. Test
+gate: on (`npm test`).
 
 ## Browser Verification
 

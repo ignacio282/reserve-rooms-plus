@@ -45,3 +45,9 @@ next-env.d.ts
 
 # case-study planning context (kept local)
 CONTEXT.md
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
