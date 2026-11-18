@@ -1,26 +1,113 @@
 @import "tailwindcss";
 
+/* Reserve Rooms+ tokens, ported from prototypes/theme.css (completed is a neutral
+   gray here). Status colors always pair with an icon and text; never rely on
+   color alone. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #f7f4ee;
+  --surface: #fffdf9;
+  --surface-2: #f1ece3;
+  --border: #e3dccf;
+  --border-strong: #cbc1ae;
+
+  --text: #23201b;
+  --muted: #625a4f;
+  --faint: #8f8576;
+
+  --accent: #1f5c3f;
+  --accent-hover: #174a32;
+  --accent-ink: #ffffff;
+  --accent-soft: #e2eee6;
+
+  --st-booked-text: #7a4f00;
+  --st-booked-bg: #fbf0d9;
+  --st-booked-edge: #d29a2e;
+  --st-checked-text: #1b4679;
+  --st-checked-bg: #dde8f6;
+  --st-checked-edge: #3a6ea5;
+  --st-released-text: #8f3417;
+  --st-released-bg: #f8e4da;
+  --st-released-edge: #c4643f;
+  --st-cancelled-text: #645d53;
+  --st-cancelled-bg: #eeeae3;
+  --st-cancelled-edge: #c9c1b4;
+  --st-completed-text: #4d4d4d;
+  --st-completed-bg: #ececea;
+  --st-completed-edge: #a8a8a4;
+
+  --now-line: #b4321c;
+  --changed-glow: rgba(31, 92, 63, 0.35);
+
+  --shadow: 0 1px 2px rgba(35, 32, 27, 0.06), 0 4px 16px rgba(35, 32, 27, 0.06);
+  --shadow-lg: 0 2px 6px rgba(35, 32, 27, 0.08), 0 16px 40px rgba(35, 32, 27, 0.14);
+  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+
+  /* agenda scale: height of one hour */
+  --hour: 6rem;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-booked: var(--st-booked-text);
+  --color-booked-bg: var(--st-booked-bg);
+  --color-booked-edge: var(--st-booked-edge);
+  --color-checked: var(--st-checked-text);
+  --color-checked-bg: var(--st-checked-bg);
+  --color-checked-edge: var(--st-checked-edge);
+  --color-cancelled: var(--st-cancelled-text);
+  --color-cancelled-bg: var(--st-cancelled-bg);
+  --color-cancelled-edge: var(--st-cancelled-edge);
+  --color-completed: var(--st-completed-text);
+  --color-completed-bg: var(--st-completed-bg);
+  --color-completed-edge: var(--st-completed-edge);
+  --color-now: var(--now-line);
+  --shadow-card: var(--shadow);
+  --shadow-pop: var(--shadow-lg);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+dialog::backdrop {
+  background: rgba(35, 32, 27, 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }

@@ -1,5 +1,4 @@
 import "server-only";
-import { libraryNow } from "@/lib/clock";
 import { supabaseAdmin } from "@/lib/server/supabase";
 import type { LibraryRow } from "@/types/domain";
 
@@ -9,11 +8,18 @@ export interface LibraryContext {
   realNow: Date;
 }
 
+/** Library settings and clock. Time comes from the database so app rules and SQL rules agree. */
 export async function getLibraryContext(): Promise<LibraryContext> {
-  const { data, error } = await supabaseAdmin().from("library").select("*").single<LibraryRow>();
-  if (error) throw new Error(`Could not load the library: ${error.message}`);
-  const realNowMs = Date.now();
-  return { library: data, now: libraryNow(realNowMs, data.clock_offset_seconds), realNow: new Date(realNowMs) };
+  const db = supabaseAdmin();
+  const [libraryResult, nowResult] = await Promise.all([
+    db.from("library").select("*").single<LibraryRow>(),
+    db.rpc("library_now"),
+  ]);
+  if (libraryResult.error) throw new Error(`Could not load the library: ${libraryResult.error.message}`);
+  if (nowResult.error) throw new Error(`Could not read the library clock: ${nowResult.error.message}`);
+  const library = libraryResult.data;
+  const now = new Date(nowResult.data as string);
+  return { library, now, realNow: new Date(now.getTime() - library.clock_offset_seconds * 1000) };
 }
 
 async function seedToday(force: boolean): Promise<boolean> {

@@ -48,3 +48,37 @@ export function libraryDayBounds(instant: Date, timeZone: string): { start: Date
     end: localMidnightUtc(next.getUTCFullYear(), next.getUTCMonth() + 1, next.getUTCDate(), timeZone),
   };
 }
+
+function pad(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
+/** The library-local calendar date of an instant, as `YYYY-MM-DD`. */
+export function libraryDateString(instant: Date, timeZone: string): string {
+  const p = zonedParts(instant, timeZone);
+  return `${p.year}-${pad(p.month)}-${pad(p.day)}`;
+}
+
+/** The library-local wall time of an instant, as `HH:MM` (24-hour). */
+export function libraryTimeString(instant: Date, timeZone: string): string {
+  const p = zonedParts(instant, timeZone);
+  return `${pad(p.hour)}:${pad(p.minute)}`;
+}
+
+/**
+ * Converts a library-local date and time to a UTC instant. A time skipped by a
+ * spring-forward change moves forward (02:30 becomes 03:30); a repeated time in
+ * a fall-back change resolves to its first occurrence.
+ */
+export function zonedTimeToUtc(date: string, time: string, timeZone: string): Date {
+  const [y, m, d] = date.split("-").map(Number);
+  const [hh, mm] = time.split(":").map(Number);
+  const guess = Date.UTC(y, m - 1, d, hh, mm);
+  const halfDay = 12 * 3_600_000;
+  const before = guess - offsetMs(new Date(guess - halfDay), timeZone);
+  const after = guess - offsetMs(new Date(guess + halfDay), timeZone);
+  const matches = (utc: number) => libraryTimeString(new Date(utc), timeZone) === `${pad(hh)}:${pad(mm)}`;
+  if (matches(before)) return new Date(before);
+  if (matches(after)) return new Date(after);
+  return new Date(before);
+}

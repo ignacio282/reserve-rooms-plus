@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { libraryDayBounds, libraryNow } from "@/lib/clock";
+import { libraryDateString, libraryDayBounds, libraryNow, libraryTimeString, zonedTimeToUtc } from "@/lib/clock";
 
 const TZ = "America/New_York";
 
@@ -42,5 +42,31 @@ describe("libraryDayBounds", () => {
     // 11:59 PM on Nov 18 in New York is already Nov 19 in UTC.
     const { start } = libraryDayBounds(new Date("2026-11-19T04:59:00Z"), TZ);
     expect(start.toISOString()).toBe("2026-11-18T05:00:00.000Z");
+  });
+});
+
+describe("zonedTimeToUtc", () => {
+  it("converts a normal library-local time", () => {
+    expect(zonedTimeToUtc("2026-11-18", "14:00", TZ).toISOString()).toBe("2026-11-18T19:00:00.000Z");
+  });
+
+  it("moves a time skipped by spring forward to the next hour", () => {
+    expect(zonedTimeToUtc("2026-03-08", "02:30", TZ).toISOString()).toBe("2026-03-08T07:30:00.000Z");
+  });
+
+  it("handles a time just after spring forward", () => {
+    expect(zonedTimeToUtc("2026-03-08", "03:30", TZ).toISOString()).toBe("2026-03-08T07:30:00.000Z");
+  });
+
+  it("resolves a repeated fall-back time to its first occurrence", () => {
+    expect(zonedTimeToUtc("2026-11-01", "01:30", TZ).toISOString()).toBe("2026-11-01T05:30:00.000Z");
+  });
+});
+
+describe("libraryDateString and libraryTimeString", () => {
+  it("uses the library's calendar near midnight", () => {
+    const instant = new Date("2026-11-19T04:59:00Z");
+    expect(libraryDateString(instant, TZ)).toBe("2026-11-18");
+    expect(libraryTimeString(instant, TZ)).toBe("23:59");
   });
 });

@@ -2,7 +2,7 @@ export type RoomType = "study" | "meeting" | "community";
 export type BookingChannel = "desk" | "web" | "walk_in";
 export type StoredBookingStatus = "booked" | "checked_in" | "cancelled" | "released" | "completed";
 export type BookingActor = "staff" | "patron" | "system";
-export type BookingEventType = "created" | "checked_in" | "released" | "cancelled" | "conflict_blocked";
+export type BookingEventType = "created" | "checked_in" | "released" | "cancelled" | "conflict_blocked" | "moved";
 
 export interface OpeningHours {
   [weekday: string]: { open: string; close: string };
