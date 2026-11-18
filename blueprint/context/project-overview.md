@@ -1,6 +1,6 @@
 # Reserve Rooms+ - Project Overview
 
-<!-- blueprint:source-hash c031dcae047198675c43e05d763acae15ccc3779fc7b4c74da543a69950a47ab -->
+<!-- blueprint:source-hash b5f05b2b188b4e70dca78f84b2a93d5858be9456fc5e2e6c6626713e8dfd43af -->
 
 > A Fernwick Reserve add-on for one public library branch: patrons book study,
 > meeting and community rooms and check in with a code that proves they are
@@ -62,12 +62,16 @@ feature 1: Supabase project and env vars.
 2. **Staff board** at `/` - By room agenda (default; book from open slots), All
    rooms grid, released time shown as open, status tags, current-time line,
    Available now, check-in / cancel / release, "Show check-in code", conflict
-   alternatives, library time control + Start over; Playwright scenario 1.
+   alternatives, library time control + Start over, booking search (name or
+   card last 4) and moving a booking to another room or time; Playwright
+   scenario 1.
 3. **Patron booking flow** at `/book` - browse rooms -> slot -> confirm ->
    success with booking code and check-in instructions.
-4. **Door display and check-in** - `/door/{roomToken}` (rotating code + QR) and
-   `/r/{roomToken}` (check-in and walk-in with all states); Playwright scenarios
-   3, 4, 5, 6, 8 (axe) and expired code.
+4. **Door display and check-in** - `/door/{roomToken}` (rotating code + QR);
+   check-in from the booking page by entering the room code (primary, wrong
+   attempts limited to 5 per 10 min); `/r/{roomToken}` fallback check-in and
+   walk-in with all states; Playwright scenarios 3, 4, 5, 6, 8 (axe) and
+   expired code.
 5. **Live updates** - Realtime broadcast ping + server refetch, polling fallback,
    live indicator and change highlight; Playwright scenario 2.
 6. **Ship it** - README and Vercel production deployment.
@@ -95,9 +99,13 @@ feature 1: Supabase project and env vars.
   (resets to an open hour, e.g. 1:55 PM today, and reseeds today).
 - **Check-in codes:** `code = HMAC(CHECKIN_CODE_SECRET, room_id + real-time
   minute)`, truncated to 6 digits. Valid for its minute plus one previous minute
-  (grace). Never stored. Check-in and walk-in at `/r/{roomToken}` require a
-  valid code; check-in also requires the booking code or card last 4. Staff can
-  check in directly from the board.
+  (grace). Never stored. Every patron check-in and walk-in needs a valid room
+  code. Primary path: the booking page (`/book/done/{bookingId}`) takes only the
+  room code, because the booking link identifies the booking. Fallback:
+  `/r/{roomToken}` takes the room code plus the booking code or card last 4.
+  After 5 wrong codes in 10 minutes (per booking on the booking page, per room
+  on `/r`), check-in pauses and points to the door QR or the front desk. Staff
+  can check in directly from the board.
 - **Time:** stored in UTC, displayed in the library's timezone.
 - **Status display:** always text + icon + color, never color alone.
 
@@ -251,8 +259,10 @@ Routes:
 - `/` - staff board: By room agenda (default), All rooms grid, Available now,
   booking actions, "Show check-in code", library time control + Start over
 - `/book` - patron browse rooms -> room -> day/slot -> confirm -> success
+- `/book/done/{bookingId}` - booking confirmation (code, window, instructions)
+  and check-in by entering the room code
 - `/door/{roomToken}` - door display: room state, 6-digit code + QR, countdown
-- `/r/{roomToken}` - check-in page (QR target, `?code=` prefilled): check in,
+- `/r/{roomToken}` - fallback check-in page (QR target, `?code=` prefilled): check in,
   too early, released, in use, free now + walk-in, taken + other rooms free now,
   expired code
 

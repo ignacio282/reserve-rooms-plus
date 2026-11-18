@@ -101,12 +101,25 @@ room door; any tablet, laptop or monitor):**
   database writes); a code is accepted for its minute plus a short grace period.
   Codes always run on real time.
 
+**Check-in from the booking page (`/book/done/{bookingId}`):**
+
+- The "Your room is booked" page has a "Check in" field for the room's current
+  6-digit code (read from the door display or the front desk). The booking link
+  identifies the booking, so no booking code or card is asked for. The page
+  tells the patron to keep it open or bookmark it.
+- Same window and states as the room check-in page (too early, released,
+  checked in, expired or wrong code).
+- Wrong codes are limited: after 5 wrong attempts in 10 minutes for a booking,
+  check-in is paused and the patron is sent to the door QR or the front desk.
+
 **Room check-in page at `/r/{roomToken}` (opened from the door QR or typed):**
 
-- Check-in requires **a current room code** (from the QR, typed from the door
-  display, or read out by the front desk) **plus** the booking code or last 4 of
-  the library card. A saved link or photo stops working within ~2 minutes, so
-  nobody can check in from home.
+- The fallback for patrons without their booking page (closed it, booked by
+  phone or at the desk, or walk-ins). Check-in requires **a current room code**
+  (from the QR, typed from the door display, or read out by the front desk)
+  **plus** the booking code or last 4 of the library card. The same wrong-attempt
+  limit applies per room. A saved link or photo stops working within ~2 minutes,
+  so nobody can check in from home.
 - States, one main action each:
   - Booking waiting for check-in -> "Check in"; anyone in the group can do it
   - Too early -> "Check-in opens at 1:50 PM", no check-in

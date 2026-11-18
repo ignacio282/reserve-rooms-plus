@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   isValidDate,
+  validatePatronFields,
   validateDeskBooking,
   validateMove,
   type DeskBookingContext,
@@ -142,5 +143,19 @@ describe("validateMove", () => {
     expect(validateMove({ start: "14:00", end: "15:00" }, checkedIn).ok).toBe(true);
     const moved = validateMove({ start: "15:00", end: "16:00" }, checkedIn);
     expect(!moved.ok && moved.fieldErrors.start).toBe("A checked-in booking can only change room.");
+  });
+});
+
+describe("validatePatronFields", () => {
+  it("trims and accepts a valid walk-in", () => {
+    expect(validatePatronFields({ patronName: "  Ana ", cardLast4: "2468", partySize: "3" }, 4)).toEqual({
+      value: { patronName: "Ana", cardLast4: "2468", partySize: 3 },
+      fieldErrors: {},
+    });
+  });
+
+  it("rejects a missing name, a bad card and a party over capacity", () => {
+    const { fieldErrors } = validatePatronFields({ patronName: " ", cardLast4: "12a4", partySize: "5" }, 4);
+    expect(Object.keys(fieldErrors).sort()).toEqual(["cardLast4", "partySize", "patronName"]);
   });
 });

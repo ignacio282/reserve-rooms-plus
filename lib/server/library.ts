@@ -36,6 +36,9 @@ export function ensureTodaySeeded(): Promise<boolean> {
 /** Replaces today's bookings with the seed day and resets the clock to 1:55 PM. */
 export async function startOver(): Promise<void> {
   await seedToday(true);
+  // A fresh start also lifts any check-in pause from wrong room codes.
+  const { error } = await supabaseAdmin().from("checkin_failure").delete().not("id", "is", null);
+  if (error) throw new Error(`Could not reset check-in attempts: ${error.message}`);
 }
 
 /** Persists every no-show past its check-in window; returns how many were released. */

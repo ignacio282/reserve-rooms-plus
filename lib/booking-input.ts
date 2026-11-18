@@ -39,6 +39,32 @@ export type DeskBookingResult =
   | { ok: true; value: { start: Date; end: Date; patronName: string; cardLast4: string; partySize: number } }
   | { ok: false; fieldErrors: Record<string, string> };
 
+export interface PatronFields {
+  patronName: string;
+  cardLast4: string;
+  partySize: string;
+}
+
+/** Name, card last 4 and party size, shared by desk, web and walk-in bookings. */
+export function validatePatronFields(
+  fields: PatronFields,
+  capacity: number,
+): { value: { patronName: string; cardLast4: string; partySize: number }; fieldErrors: Record<string, string> } {
+  const fieldErrors: Record<string, string> = {};
+  const patronName = fields.patronName.trim();
+  if (!patronName) fieldErrors.patronName = "Enter the patron's name.";
+  else if (patronName.length > 80) fieldErrors.patronName = "Name must be 80 characters or fewer.";
+
+  const cardLast4 = fields.cardLast4.trim();
+  if (!/^\d{4}$/.test(cardLast4)) fieldErrors.cardLast4 = "Enter the last 4 digits of the library card.";
+
+  const partySize = Number(fields.partySize);
+  if (!Number.isInteger(partySize) || partySize < 1 || partySize > capacity) {
+    fieldErrors.partySize = `Party size must be between 1 and ${capacity}.`;
+  }
+  return { value: { patronName, cardLast4, partySize }, fieldErrors };
+}
+
 function onBoundary(time: string): boolean {
   return Number(time.slice(3)) % SLOT_MINUTES === 0;
 }
@@ -47,17 +73,9 @@ export function validateDeskBooking(fields: DeskBookingFields, ctx: DeskBookingC
   const errors: Record<string, string> = {};
   const { timeZone, now } = ctx;
 
-  const patronName = fields.patronName.trim();
-  if (!patronName) errors.patronName = "Enter the patron's name.";
-  else if (patronName.length > 80) errors.patronName = "Name must be 80 characters or fewer.";
-
-  const cardLast4 = fields.cardLast4.trim();
-  if (!/^\d{4}$/.test(cardLast4)) errors.cardLast4 = "Enter the last 4 digits of the library card.";
-
-  const partySize = Number(fields.partySize);
-  if (!Number.isInteger(partySize) || partySize < 1 || partySize > ctx.room.capacity) {
-    errors.partySize = `Party size must be between 1 and ${ctx.room.capacity}.`;
-  }
+  const patron = validatePatronFields(fields, ctx.room.capacity);
+  Object.assign(errors, patron.fieldErrors);
+  const { patronName, cardLast4, partySize } = patron.value;
 
   const open = isValidDate(fields.date) ? openingHoursFor(fields.date, ctx.openingHours, timeZone) : null;
   if (!open) {

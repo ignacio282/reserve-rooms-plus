@@ -3,9 +3,10 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PatronHeader, PatronLoading, patronContext, TYPE_LABEL, UUID_RE } from "@/app/book/_components/patron";
 import { Icon } from "@/app/_components/Icon";
+import { CheckInForm } from "@/app/book/_components/CheckInForm";
 import { checkInWindow, deriveStatus } from "@/lib/booking-rules";
 import { libraryDateString } from "@/lib/clock";
-import { formatDayLabel, formatTimeRange } from "@/lib/format";
+import { formatDayLabel, formatTime, formatTimeRange } from "@/lib/format";
 import { loadRoom, settingsOf, toBoardBooking } from "@/lib/server/board";
 import { loadBookingById } from "@/lib/server/patron";
 
@@ -70,23 +71,40 @@ async function Done({ params }: { params: Promise<{ bookingId: string }> }) {
             <p className="font-mono text-4xl font-semibold tracking-[0.2em]" aria-label={row.booking_code.split("").join(" ")}>
               {row.booking_code}
             </p>
-            <p className="mt-1 text-sm text-muted">Keep this code. You will use it to check in.</p>
+            <p className="mt-1 text-sm text-muted">Keep this code. You can use it to check in at the door if you close this page.</p>
           </div>
         </section>
 
-        {status === "booked" ? (
-          <section aria-labelledby="checkin-title" className="flex flex-col gap-3 rounded-xl border border-booked-edge bg-booked-bg p-5 text-ink">
+        {active ? (
+          <section
+            aria-labelledby="checkin-title"
+            className={`flex flex-col gap-3 rounded-xl border p-5 text-ink ${status === "booked" ? "border-booked-edge bg-booked-bg" : "border-checked-edge bg-surface"}`}
+          >
             <h2 id="checkin-title" className="flex items-center gap-2 text-lg font-semibold">
-              <Icon name="clock" className="size-5" />
-              Check in when you arrive
+              <Icon name={status === "booked" ? "clock" : "check"} className="size-5" />
+              {status === "booked" ? "Check in when you arrive" : "Checked in"}
             </h2>
-            <p className="font-semibold">Check in between {windowText} or the room is released.</p>
-            <ol className="ml-5 flex list-decimal flex-col gap-1.5">
-              <li>Go to {room.name} ({room.location_in_building}).</li>
-              <li>Scan the code on the room&apos;s door display with your phone camera.</li>
-              <li>Enter your booking code or the last 4 digits of your library card.</li>
-            </ol>
-            <p>No phone? Ask at the front desk and staff will check you in.</p>
+            {status === "booked" ? (
+              <>
+                <p className="font-semibold">Check in between {windowText} or the room is released.</p>
+                <ol className="ml-5 flex list-decimal flex-col gap-1.5">
+                  <li>Go to {room.name} ({room.location_in_building}).</li>
+                  <li>Enter the 6-digit code shown on the room&apos;s door display below.</li>
+                </ol>
+                <p className="text-sm">Keep this page open or bookmark it so you can check in from here.</p>
+              </>
+            ) : null}
+            <CheckInForm
+              bookingId={row.id}
+              checkedIn={status === "checked_in"}
+              checkedInText={`You are checked in. The room is yours until ${formatTime(booking.endAt, tz)}.`}
+            />
+            {status === "booked" ? (
+              <p className="text-sm">
+                Closed this page? Scan the QR code on the door display with your phone camera and enter your booking code.
+                No phone? Ask at the front desk and staff will check you in.
+              </p>
+            ) : null}
           </section>
         ) : null}
 

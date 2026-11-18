@@ -61,7 +61,8 @@ test.describe("patron booking", () => {
     await expect(page.getByRole("heading", { name: "Your room is booked" })).toBeVisible();
     await expect(page.getByText(/^[A-HJ-NP-Z2-9]{6}$/)).toBeVisible();
     await expect(page.getByText("Check in between 1:50 and 2:15 PM or the room is released.")).toBeVisible();
-    await expect(page.getByText("Scan the code on the room's door display with your phone camera.")).toBeVisible();
+    await expect(page.getByText("Enter the 6-digit code shown on the room's door display below.")).toBeVisible();
+    await expect(page.getByLabel("Room code")).toBeVisible();
     await page.screenshot({ path: "test-results/patron-booked.png", fullPage: true });
 
     await staff.goto("/");
