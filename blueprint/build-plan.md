@@ -19,7 +19,7 @@ Start with your first real slice of functionality.
 Setup already done: Vitest (`npm test`) and Playwright (`npm run test:browser`).
 Before feature 1: create the Supabase project and env vars.
 
-- [ ] 1. **Data foundation and booking rules** - single-branch Supabase schema with `btree_gist` no-overlap constraint, today-relative Maple Hollow seed, shared library clock, derived status and check-in window rules, rotating check-in code generation and verification, report math; unit tests (incl. scenario 7)
+- [x] 1. **Data foundation and booking rules** - single-branch Supabase schema with `btree_gist` no-overlap constraint, today-relative Maple Hollow seed, shared library clock, derived status and check-in window rules, rotating check-in code generation and verification, report math; unit tests (incl. scenario 7)
 - [ ] 2. **Staff board** - at `/`: day navigation, By room agenda (default, bookings made from open slots) and All rooms grid, released time shown as open, one status tag per booking, current-time line, Available now, check-in / cancel / release, "Show check-in code", conflict message with alternatives, library time control and Start over; Playwright scenario 1
 - [ ] 3. **Patron booking flow** - `/book`, mobile-first: browse rooms (type, capacity, location, amenities) -> slot -> confirm -> success with booking code and check-in instructions
 - [ ] 4. **Door display and check-in** - `/door/{roomToken}` with a code and QR that change every 60 s; `/r/{roomToken}` check-in requiring the current room code plus booking code or card last 4, with too early, released, in use, free now with walk-in, taken and expired-code states; Playwright scenarios 3, 4, 5, 6, 8 (axe) and expired code
