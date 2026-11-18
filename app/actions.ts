@@ -3,9 +3,10 @@
 import { refresh } from "next/cache";
 import { deriveStatus } from "@/lib/booking-rules";
 import { isValidDate, isValidTime, validateDeskBooking, validateMove } from "@/lib/booking-input";
-import { libraryDateString, libraryTimeString, zonedTimeToUtc } from "@/lib/clock";
+import { libraryDateString, zonedTimeToUtc } from "@/lib/clock";
 import { formatTimeRange } from "@/lib/format";
-import { activeIntervals, findAlternatives, openingHoursFor, type Interval } from "@/lib/schedule";
+import { activeIntervals } from "@/lib/schedule";
+import { alternativesFor, type AlternativeOption } from "@/lib/server/alternatives";
 import { loadBookingsStartingBetween, loadRoom, loadRooms, settingsOf, toBoardBooking } from "@/lib/server/board";
 import { currentCheckinCode } from "@/lib/server/checkin-code";
 import { getLibraryContext, startOver } from "@/lib/server/library";
@@ -16,13 +17,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 const UNEXPECTED = "Something went wrong. Try again.";
 const GONE = "This booking no longer exists. The board has been refreshed.";
 
-export interface AlternativeOption {
-  roomId: string;
-  roomName: string;
-  start: string;
-  end: string;
-  label: string;
-}
+export type { AlternativeOption } from "@/lib/server/alternatives";
 
 export type ActionFailure = {
   success: false;
@@ -42,34 +37,6 @@ function field(formData: FormData, name: string): string {
 function failUnexpected(error: unknown): ActionFailure {
   console.error(error);
   return { success: false, error: UNEXPECTED };
-}
-
-async function alternativesFor(
-  roomId: string,
-  date: string,
-  start: Date,
-  end: Date,
-  partySize: number,
-): Promise<AlternativeOption[]> {
-  const ctx = await getLibraryContext();
-  const { timezone: tz } = ctx.library;
-  const open = openingHoursFor(date, ctx.library.opening_hours, tz);
-  if (!open) return [];
-  const [rooms, rows] = await Promise.all([loadRooms(), loadBookingsStartingBetween(open.start, open.end)]);
-  const settings = settingsOf(ctx.library);
-  const busyByRoom = new Map<string, Interval[]>();
-  for (const room of rooms) {
-    const mine = rows.filter((r) => r.room_id === room.id).map(toBoardBooking);
-    busyByRoom.set(room.id, activeIntervals(mine, settings, ctx.now));
-  }
-  const { sameRoom, otherRooms } = findAlternatives({ roomId, start, end, partySize, rooms, busyByRoom, open });
-  return [...sameRoom, ...otherRooms].map((a) => ({
-    roomId: a.roomId,
-    roomName: a.roomName,
-    start: libraryTimeString(a.start, tz),
-    end: libraryTimeString(a.end, tz),
-    label: `${a.roomName}, ${formatTimeRange(a.start, a.end, tz)}`,
-  }));
 }
 
 export async function createDeskBooking(_prev: BookingFormState, formData: FormData): Promise<BookingFormState> {

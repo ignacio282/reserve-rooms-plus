@@ -174,3 +174,41 @@ export function matchesBookingQuery(booking: { patronName: string; cardLast4: st
   if (/^\d+$/.test(q)) return booking.cardLast4.startsWith(q);
   return booking.patronName.toLowerCase().includes(q.toLowerCase());
 }
+
+/** `today` plus the following days, as `YYYY-MM-DD`. */
+export function bookingDays(today: string, count: number): string[] {
+  const [y, m, d] = today.split("-").map(Number);
+  return Array.from({ length: count }, (_, i) => new Date(Date.UTC(y, m - 1, d + i)).toISOString().slice(0, 10));
+}
+
+export interface StartSlot extends TimeOption {
+  state: "available" | "taken" | "past";
+}
+
+/** Every 30-minute start in opening hours; a start is available only if 30 free minutes follow it. */
+export function startSlots(open: Interval, busy: Interval[], now: Date, timeZone: string): StartSlot[] {
+  const slots: StartSlot[] = [];
+  for (let t = open.start.getTime(); t + SLOT_MS <= open.end.getTime(); t += SLOT_MS) {
+    const at = new Date(t);
+    const state = t < now.getTime() ? "past" : isFree(busy, at, new Date(t + SLOT_MS)) ? "available" : "taken";
+    slots.push({ value: libraryTimeString(at, timeZone), label: formatTime(at, timeZone), at, state });
+  }
+  return slots;
+}
+
+/** Lengths in 30-minute steps that fit before the next booking, closing and the room maximum. */
+export function lengthOptions(start: Date, busy: Interval[], close: Date, maxMinutes: number): number[] {
+  const nextBusy = busy.filter((b) => b.start >= start).reduce((min, b) => Math.min(min, b.start.getTime()), Infinity);
+  const limit = Math.min(close.getTime(), nextBusy, start.getTime() + maxMinutes * 60_000);
+  const lengths: number[] = [];
+  for (let m = SLOT_MINUTES; start.getTime() + m * 60_000 <= limit; m += SLOT_MINUTES) lengths.push(m);
+  return lengths;
+}
+
+/** "30 min", "1 hour", "1 hour 30 min", "2 hours". */
+export function formatLength(minutes: number): string {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  const hours = h === 0 ? "" : h === 1 ? "1 hour" : `${h} hours`;
+  return [hours, m ? `${m} min` : ""].filter(Boolean).join(" ");
+}

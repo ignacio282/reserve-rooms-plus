@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import type { RuleBooking } from "@/lib/booking-rules";
 import {
   activeIntervals,
+  bookingDays,
+  formatLength,
+  lengthOptions,
+  startSlots,
   availableNow,
   endOptions,
   findAlternatives,
@@ -252,5 +256,56 @@ describe("matchesBookingQuery", () => {
 
   it("matches nothing for an empty query", () => {
     expect(matchesBookingQuery(b, "  ")).toBe(false);
+  });
+});
+
+describe("bookingDays", () => {
+  it("lists consecutive days across a month end", () => {
+    expect(bookingDays("2026-11-29", 4)).toEqual(["2026-11-29", "2026-11-30", "2026-12-01", "2026-12-02"]);
+  });
+});
+
+describe("startSlots", () => {
+  const busy = [
+    { start: local("14:00"), end: local("15:00") },
+    { start: local("15:45"), end: local("17:00") },
+  ];
+  const slots = startSlots(open, busy, local("13:55"), TZ);
+  const stateAt = (v: string) => slots.find((s) => s.value === v)?.state;
+
+  it("marks past, taken and available starts", () => {
+    expect(stateAt("13:30")).toBe("past");
+    expect(stateAt("14:00")).toBe("taken");
+    expect(stateAt("14:30")).toBe("taken");
+    expect(stateAt("15:00")).toBe("available");
+    expect(stateAt("17:00")).toBe("available");
+  });
+
+  it("needs 30 free minutes after a start", () => {
+    expect(stateAt("15:30")).toBe("taken");
+  });
+
+  it("ends with the last start that fits before closing", () => {
+    expect(slots.at(-1)).toMatchObject({ value: "19:30", label: "7:30 PM" });
+  });
+});
+
+describe("lengthOptions", () => {
+  const busy = [{ start: local("15:00"), end: local("16:00") }];
+
+  it("stops at the next booking", () => {
+    expect(lengthOptions(local("14:00"), busy, local("20:00"), 120)).toEqual([30, 60]);
+  });
+
+  it("stops at closing", () => {
+    expect(lengthOptions(local("19:00"), [], local("20:00"), 120)).toEqual([30, 60]);
+  });
+
+  it("stops at the room maximum", () => {
+    expect(lengthOptions(local("16:00"), busy, local("20:00"), 120)).toEqual([30, 60, 90, 120]);
+  });
+
+  it("formats lengths in plain words", () => {
+    expect([30, 60, 90, 120].map(formatLength)).toEqual(["30 min", "1 hour", "1 hour 30 min", "2 hours"]);
   });
 });
