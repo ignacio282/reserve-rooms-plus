@@ -9,11 +9,13 @@ const TAGS: Record<TagStatus, { label: string; icon: IconName; className: string
   cancelled: { label: "Cancelled", icon: "x", className: "bg-cancelled-bg text-cancelled border-cancelled-edge" },
 };
 
-export const CARD_EDGE: Record<TagStatus, string> = {
-  booked: "border-l-booked-edge bg-booked-bg/60",
-  checked_in: "border-l-checked-edge bg-checked-bg/60",
-  completed: "border-l-completed-edge bg-completed-bg/60",
-  cancelled: "border-l-cancelled-edge bg-cancelled-bg/60",
+export type BlockStatus = "booked" | "checked_in" | "completed";
+
+/** Booking block look shared by the All rooms grid and the room agenda: tinted box, status as icon + text. */
+export const STATUS_BLOCK: Record<BlockStatus, { box: string; text: string; label: string; icon: IconName }> = {
+  booked: { box: "border-booked-edge bg-booked-bg", text: "text-booked", label: "Booked - awaiting check-in", icon: "clock" },
+  checked_in: { box: "border-checked-edge bg-checked-bg", text: "text-checked", label: "Checked in", icon: "check" },
+  completed: { box: "border-completed-edge bg-completed-bg", text: "text-completed", label: "Completed", icon: "done" },
 };
 
 export function StatusTag({ status, detail }: { status: TagStatus; detail?: string }) {

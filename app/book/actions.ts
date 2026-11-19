@@ -21,6 +21,7 @@ import { recentFailures, recordFailure } from "@/lib/server/checkin";
 import { isValidCheckinCode } from "@/lib/server/checkin-code";
 import { loadBookingById } from "@/lib/server/patron";
 import { getLibraryContext } from "@/lib/server/library";
+import { announceChange } from "@/lib/server/live";
 import { supabaseAdmin } from "@/lib/server/supabase";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -92,6 +93,7 @@ export async function createWebBooking(_prev: WebBookingState, formData: FormDat
       };
     }
     bookingId = result.id;
+    announceChange();
   } catch (error) {
     console.error(error);
     return { success: false, error: "Something went wrong. Try again." };
@@ -140,6 +142,7 @@ export async function checkInFromBookingPage(_prev: CheckInResult, formData: For
         : null;
       return { success: false, kind: "state", error: message ?? "This booking changed. Try again." };
     }
+    announceChange();
     return { success: true, message: "You are checked in." };
   } catch (error) {
     console.error(error);

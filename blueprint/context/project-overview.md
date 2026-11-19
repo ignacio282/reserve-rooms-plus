@@ -1,6 +1,6 @@
 # Reserve Rooms+ - Project Overview
 
-<!-- blueprint:source-hash b5f05b2b188b4e70dca78f84b2a93d5858be9456fc5e2e6c6626713e8dfd43af -->
+<!-- blueprint:source-hash 2e991d8e8a42653f90cf015d092f01d56158452768d3d01f34891a1a615b84de -->
 
 > A Fernwick Reserve add-on for one public library branch: patrons book study,
 > meeting and community rooms and check in with a code that proves they are

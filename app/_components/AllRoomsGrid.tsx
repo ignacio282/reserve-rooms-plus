@@ -1,8 +1,9 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import type { BookingSummary } from "@/app/_components/booking-summary";
-import { Icon, type IconName } from "@/app/_components/Icon";
+import { Icon } from "@/app/_components/Icon";
 import { OpenPanelButton } from "@/app/_components/OpenPanelButton";
+import { STATUS_BLOCK, type BlockStatus } from "@/app/_components/StatusTag";
 import { deriveStatus, type CheckInSettings } from "@/lib/booking-rules";
 import { formatTime, formatTimeRange } from "@/lib/format";
 import { SLOT_MINUTES, type Interval } from "@/lib/schedule";
@@ -10,14 +11,6 @@ import type { BoardBooking } from "@/lib/server/board";
 import type { RoomRow } from "@/types/domain";
 
 const SLOT_MS = SLOT_MINUTES * 60_000;
-
-type Shown = "booked" | "checked_in" | "completed";
-
-const BLOCK: Record<Shown, { box: string; text: string; label: string; icon: IconName }> = {
-  booked: { box: "border-booked-edge bg-booked-bg", text: "text-booked", label: "Booked - awaiting check-in", icon: "clock" },
-  checked_in: { box: "border-checked-edge bg-checked-bg", text: "text-checked", label: "Checked in", icon: "check" },
-  completed: { box: "border-completed-edge bg-completed-bg", text: "text-completed", label: "Completed", icon: "done" },
-};
 
 export function AllRoomsGrid({
   rooms,
@@ -72,7 +65,7 @@ export function AllRoomsGrid({
           const row = rowIndex + 2;
           const blocks = (bookingsByRoom.get(room.id) ?? [])
             .map((b) => ({ ...b, derived: deriveStatus(b, settings, now) }))
-            .filter((b): b is BoardBooking & { derived: Shown } =>
+            .filter((b): b is BoardBooking & { derived: BlockStatus } =>
               b.derived === "booked" || b.derived === "checked_in" || b.derived === "completed",
             );
           return [
@@ -93,13 +86,15 @@ export function AllRoomsGrid({
               aria-hidden="true"
             />,
             ...blocks.map((b) => {
-              const look = BLOCK[b.derived];
+              const look = STATUS_BLOCK[b.derived];
               const summary = summaries.get(b.id);
               const highlight = matches ? (matches.has(b.id) ? "ring-2 ring-accent ring-offset-1" : "opacity-35") : "";
               const span = Math.max(1, Math.ceil((b.endAt.getTime() - b.startAt.getTime()) / SLOT_MS));
               return (
                 <div
                   key={b.id}
+                  data-live-key={b.id}
+                  data-live-version={`${b.derived}|${b.startAt.toISOString()}|${b.endAt.toISOString()}|${room.id}`}
                   className={`z-10 col-start-[var(--col)] col-end-[span_var(--span)] row-start-[var(--row)] mx-1 my-2 flex min-w-0 ${highlight}`}
                   style={{ "--row": row, "--col": col(b.startAt), "--span": span } as CSSProperties}
                 >

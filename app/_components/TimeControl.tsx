@@ -129,25 +129,33 @@ export function TimeControl({
     });
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <p className="text-sm">
+    <div className="flex flex-wrap items-end gap-x-3 gap-y-2">
+      <p className="text-sm sm:pb-2">
         <span className="text-muted">Library time </span>
         <span className="font-semibold" data-testid="library-time">
           {nowLabel}
         </span>
       </p>
-      <button type="button" className={quiet} disabled={isPending} onClick={() => run(advanceLibraryClock)}>
-        <Icon name="forward" />
-        +15 min
-      </button>
-      <button type="button" className={quiet} disabled={isPending} onClick={() => setDialog("set")}>
-        <Icon name="clock" />
-        Set time
-      </button>
-      <button type="button" className={quiet} disabled={isPending} onClick={() => setDialog("reset")}>
-        <Icon name="reset" />
-        Start over
-      </button>
+      {/* Not part of the product: these move the shared library clock for trying the app out. */}
+      <div role="group" aria-labelledby="testing-tools-label" className="flex flex-col gap-1">
+        <p id="testing-tools-label" className="text-[11px] font-semibold tracking-wide text-muted uppercase">
+          Testing tools
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className={quiet} disabled={isPending} onClick={() => run(advanceLibraryClock)}>
+            <Icon name="forward" />
+            +15 min
+          </button>
+          <button type="button" className={quiet} disabled={isPending} onClick={() => setDialog("set")}>
+            <Icon name="clock" />
+            Set time
+          </button>
+          <button type="button" className={quiet} disabled={isPending} onClick={() => setDialog("reset")}>
+            <Icon name="reset" />
+            Start over
+          </button>
+        </div>
+      </div>
       {dialog === "set" ? (
         <SetTimeDialog
           defaultDate={nowDate}

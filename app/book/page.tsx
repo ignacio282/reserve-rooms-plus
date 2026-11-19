@@ -61,7 +61,12 @@ async function RoomList({ searchParams }: { searchParams: Promise<SearchParams> 
             {rooms.map((room) => {
               const state = day.stateByRoom.get(room.id);
               return (
-                <li key={room.id}>
+                <li
+                  key={room.id}
+                  data-live-key={`room:${room.id}`}
+                  data-live-version={JSON.stringify(state ?? null)}
+                  className="rounded-xl"
+                >
                   <Link
                     href={`/book/${room.id}`}
                     className="flex items-center gap-4 rounded-xl border border-line bg-surface p-4 hover:border-accent"

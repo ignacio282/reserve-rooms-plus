@@ -111,3 +111,95 @@ dialog::backdrop {
     transform: none;
   }
 }
+
+/* Live updates: pulsing "Live" dot and a one-time highlight on what just changed elsewhere. */
+.live-dot {
+  animation: live-pulse 2s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+[data-live-changed]:not(:focus-visible) {
+  animation: live-changed 2.4s ease-out 1;
+}
+
+@keyframes live-changed {
+  0% {
+    box-shadow: 0 0 0 0 var(--changed-glow);
+  }
+  40% {
+    box-shadow: 0 0 0 6px var(--changed-glow);
+  }
+  100% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-live-changed] {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+/* "More actions" on agenda cards: a bottom sheet on phones (and without anchor positioning),
+   a small menu anchored under its button on wider screens. */
+.action-sheet {
+  position: fixed;
+  inset: auto 0 0 0;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  display: none;
+  flex-direction: column;
+  gap: 0.125rem;
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-radius: 1rem 1rem 0 0;
+  padding: 0.75rem 0.75rem calc(0.75rem + env(safe-area-inset-bottom));
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-lg);
+}
+
+.action-sheet:popover-open {
+  display: flex;
+}
+
+.action-sheet::backdrop {
+  background: rgba(35, 32, 27, 0.4);
+}
+
+.action-sheet-title {
+  padding: 0.25rem 0.75rem 0.5rem;
+  font-size: var(--text-sm, 0.8125rem);
+  font-weight: 600;
+  color: var(--muted);
+}
+
+@media (min-width: 640px) {
+  @supports (position-area: block-end) {
+    .action-sheet {
+      inset: auto;
+      margin-block-start: 0.25rem;
+      position-area: block-end span-inline-start;
+      position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+      min-width: 11rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.25rem;
+    }
+
+    .action-sheet::backdrop {
+      background: transparent;
+    }
+
+    .action-sheet-title {
+      display: none;
+    }
+  }
+}

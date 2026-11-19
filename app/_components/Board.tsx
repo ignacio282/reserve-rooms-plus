@@ -6,6 +6,7 @@ import { summarize, type BookingSummary } from "@/app/_components/booking-summar
 import { BookingSearch } from "@/app/_components/BookingSearch";
 import { OpenPanelButton } from "@/app/_components/OpenPanelButton";
 import { Icon } from "@/app/_components/Icon";
+import { LiveIndicator } from "@/app/_components/LiveIndicator";
 import { RoomAgenda } from "@/app/_components/RoomAgenda";
 import { TimeControl } from "@/app/_components/TimeControl";
 import { isValidDate } from "@/lib/booking-input";
@@ -131,9 +132,12 @@ export async function Board({ searchParams }: { searchParams: Promise<SearchPara
       }}
     >
       <header className="flex flex-wrap items-center justify-between gap-4 border-b border-line bg-surface px-6 py-3">
-        <p className="font-semibold">
-          {library.name} <span className="font-normal text-muted">· Reserve Rooms+</span>
-        </p>
+        <div className="flex items-center gap-4">
+          <p className="font-semibold">
+            {library.name} <span className="font-normal text-muted">· Reserve Rooms+</span>
+          </p>
+          <LiveIndicator />
+        </div>
         <TimeControl
           nowLabel={`${formatDayLabel(today)} - ${formatTime(now, tz)}`}
           nowDate={today}
@@ -312,7 +316,12 @@ export async function Board({ searchParams }: { searchParams: Promise<SearchPara
               ) : (
                 <ul className="flex flex-col gap-3">
                   {available.map(({ room, freeUntil }) => (
-                    <li key={room.id} className="flex items-center justify-between gap-3">
+                    <li
+                      key={room.id}
+                      data-live-key={`avail:${room.id}`}
+                      data-live-version={freeUntil.toISOString()}
+                      className="flex items-center justify-between gap-3 rounded-md"
+                    >
                       <div>
                         <p className="text-sm font-medium">{room.name}</p>
                         <p className="text-xs text-muted">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Icon } from "@/app/_components/Icon";
+import { LiveIndicator } from "@/app/_components/LiveIndicator";
 import { roomStatusText } from "@/app/_components/room-status";
 import { patronContext } from "@/app/book/_components/patron";
 import { DoorCode } from "@/app/door/_components/DoorCode";
@@ -30,9 +31,14 @@ async function Door({ params }: { params: Promise<{ roomToken: string }> }) {
         <p className="text-xl text-muted">
           {library.name} · {room.location_in_building}
         </p>
+        <LiveIndicator className="text-base" />
       </header>
 
-      <section aria-label="Room status" className={`flex flex-col gap-2 rounded-2xl border-2 p-6 ${status.tone}`}>
+      <section
+        aria-label="Room status"
+        data-live-key={`door:${room.id}`}
+        data-live-version={`${status.headline}|${status.detail ?? ""}`}
+        className={`flex flex-col gap-2 rounded-2xl border-2 p-6 ${status.tone}`}>
         <p data-testid="door-status" className="flex items-center gap-3 text-3xl font-semibold sm:text-4xl">
           <Icon name={status.icon} className="size-9" />
           {status.headline}

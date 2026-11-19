@@ -4,6 +4,7 @@ import {
   activeIntervals,
   bookingDays,
   formatLength,
+  gridRows,
   lengthOptions,
   startSlots,
   availableNow,
@@ -307,5 +308,26 @@ describe("lengthOptions", () => {
 
   it("formats lengths in plain words", () => {
     expect([30, 60, 90, 120].map(formatLength)).toEqual(["30 min", "1 hour", "1 hour 30 min", "2 hours"]);
+  });
+});
+
+describe("gridRows", () => {
+  const origin = new Date("2030-01-15T14:00:00Z");
+  const at = (min: number) => new Date(origin.getTime() + min * 60_000);
+  const ROW = 5 * 60_000;
+
+  it("maps a booking to its 5-minute rows", () => {
+    expect(gridRows(origin, at(60), at(120), ROW)).toEqual({ from: 13, to: 25 });
+  });
+
+  it("gives neighbours sharing an unaligned boundary the same line", () => {
+    const slot = gridRows(origin, at(0), at(57), ROW);
+    const walkIn = gridRows(origin, at(57), at(90), ROW);
+    expect(slot.to).toBe(walkIn.from);
+  });
+
+  it("keeps at least one row and never starts before the grid", () => {
+    expect(gridRows(origin, at(30), at(31), ROW)).toEqual({ from: 7, to: 8 });
+    expect(gridRows(origin, at(-10), at(10), ROW)).toEqual({ from: 1, to: 3 });
   });
 });

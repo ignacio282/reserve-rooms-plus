@@ -18,6 +18,12 @@ function card(page: Page, range: string) {
   return page.locator("article").filter({ hasText: range });
 }
 
+/** Opens a card's "More actions" sheet and picks an action. */
+async function moreActions(page: Page, range: string, action: string) {
+  await card(page, range).getByRole("button", { name: "More actions" }).click();
+  await page.getByRole("group", { name: /^More actions for/ }).getByRole("button", { name: action }).click();
+}
+
 async function book(page: Page, room: string, start: string, end: string, patron: string) {
   await page.getByRole("button", { name: new RegExp(`^Book ${room}, open`) }).first().click();
   const dialog = page.getByRole("dialog", { name: `Book ${room}` });
@@ -71,7 +77,7 @@ test.describe("staff board", () => {
     await card(page, "2:00-3:00 PM").getByRole("button", { name: "Check in" }).click();
     await expect(card(page, "2:00-3:00 PM")).toContainText("Checked in");
 
-    await card(page, "4:00-5:30 PM").getByRole("button", { name: "Cancel" }).click();
+    await moreActions(page, "4:00-5:30 PM", "Cancel booking");
     await page.getByRole("dialog", { name: "Cancel this booking?" }).getByRole("button", { name: "Cancel booking" }).click();
     await expect(page.getByText("Cancelled (1)")).toBeVisible();
     await expect(card(page, "4:00-5:30 PM")).toHaveCount(0);
@@ -129,7 +135,7 @@ test("search finds a booking by name or card and moves it to a free room", async
   test("moving into a taken time is blocked with alternatives", async ({ page }) => {
     await startOver(page);
     await openRoom(page, "Study Room B");
-    await card(page, "3:00-4:00 PM").getByRole("button", { name: "Move booking" }).click();
+    await moreActions(page, "3:00-4:00 PM", "Move booking");
     const move = page.getByRole("dialog", { name: "Move Grace Kim's booking" });
     await move.getByLabel("Room").selectOption({ label: "Study Room D (up to 6)" });
     await move.getByRole("button", { name: "Move booking" }).click();
@@ -140,6 +146,9 @@ test("search finds a booking by name or card and moves it to a free room", async
   });
 
   test("toasts confirm success and explain failures", async ({ page, browser }) => {
+    // This board must go stale: no live pings, and no polling once the clock is paused below.
+    await page.context().routeWebSocket(/\/realtime\/v1\/websocket/, (ws) => ws.close());
+    await page.clock.install();
     await startOver(page);
     await openRoom(page, "Study Room A");
     await card(page, "2:00-3:00 PM").getByRole("button", { name: "Check in" }).click();
@@ -149,10 +158,11 @@ test("search finds a booking by name or card and moves it to a free room", async
     await expect(toast).toBeEmpty();
 
     await openRoom(page, "Study Room B");
+    await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
     const other = await browser.newPage();
     await startOver(other);
     await other.close();
-    await card(page, "3:00-4:00 PM").getByRole("button", { name: "Cancel" }).click();
+    await moreActions(page, "3:00-4:00 PM", "Cancel booking");
     await page.getByRole("dialog", { name: "Cancel this booking?" }).getByRole("button", { name: "Cancel booking" }).click();
     await expect(toast).toContainText("Error: This booking changed. The board has been refreshed.");
   });

@@ -11,6 +11,7 @@ import { settingsOf } from "@/lib/server/board";
 import { loadRoomByToken, loadRoomDay, recentFailures, recordFailure } from "@/lib/server/checkin";
 import { isValidCheckinCode } from "@/lib/server/checkin-code";
 import { getLibraryContext, type LibraryContext } from "@/lib/server/library";
+import { announceChange } from "@/lib/server/live";
 import { loadPatronDay } from "@/lib/server/patron";
 import { supabaseAdmin } from "@/lib/server/supabase";
 import type { RoomRow } from "@/types/domain";
@@ -108,6 +109,7 @@ export async function checkInAtRoom(_prev: RoomResult, formData: FormData): Prom
     if (error) throw new Error(`apply_booking_action failed: ${error.message}`);
     refresh();
     if (data !== true) return { success: false, kind: "state", error: "This booking just changed. Try again." };
+    announceChange();
     return {
       success: true,
       kind: "checked_in",
@@ -163,6 +165,7 @@ export async function walkIn(_prev: RoomResult, formData: FormData): Promise<Roo
       const latest = await roomView(await getLibraryContext(), room);
       return takenResult(ctx, room, latest.view.nextFree, `Sorry, someone just booked ${room.name}.`);
     }
+    announceChange();
     return {
       success: true,
       kind: "walk_in",

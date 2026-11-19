@@ -10,6 +10,7 @@ import { alternativesFor, type AlternativeOption } from "@/lib/server/alternativ
 import { loadBookingsStartingBetween, loadRoom, loadRooms, settingsOf, toBoardBooking } from "@/lib/server/board";
 import { currentCheckinCode } from "@/lib/server/checkin-code";
 import { getLibraryContext, startOver } from "@/lib/server/library";
+import { announceChange } from "@/lib/server/live";
 import { supabaseAdmin } from "@/lib/server/supabase";
 import type { BookingRow } from "@/types/domain";
 
@@ -77,6 +78,7 @@ export async function createDeskBooking(_prev: BookingFormState, formData: FormD
     const result = data as { ok: true; id: string } | { ok: false; conflict: { start_at: string; end_at: string } };
     refresh();
     if (result.ok) {
+      announceChange();
       return {
         success: true,
         bookingId: result.id,
@@ -112,6 +114,7 @@ async function bookingAction(id: string, action: "check_in" | "cancel" | "releas
     if (error) throw new Error(`apply_booking_action failed: ${error.message}`);
     refresh();
     if (data !== true) return { success: false, error: "This booking changed. The board has been refreshed." };
+    announceChange();
     return { success: true, message: ACTION_DONE[action] };
   } catch (error) {
     return failUnexpected(error);
@@ -146,6 +149,7 @@ async function runClockChange(change: () => Promise<{ error: { message: string }
     const { error } = await change();
     if (error) throw new Error(error.message);
     refresh();
+    announceChange();
     return { success: true as const, message };
   } catch (error) {
     return failUnexpected(error);
@@ -180,6 +184,7 @@ export async function startOverAction(): Promise<SimpleResult> {
   try {
     await startOver();
     refresh();
+    announceChange();
     return { success: true, message: "Today's bookings were reset. Library time is 1:55 PM." };
   } catch (error) {
     return failUnexpected(error);
@@ -282,6 +287,7 @@ export async function moveBooking(_prev: MoveFormState, formData: FormData): Pro
     const result = data as { ok: true } | { ok: false; reason?: "changed"; conflict?: { start_at: string; end_at: string } };
     const range = formatTimeRange(start, end, tz);
     if (result.ok) {
+      announceChange();
       return { success: true, roomId: room.id, message: `Moved ${booking.patronName} to ${room.name}, ${range}.` };
     }
     if (!result.conflict) {

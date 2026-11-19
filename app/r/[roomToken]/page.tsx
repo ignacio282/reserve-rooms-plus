@@ -42,7 +42,11 @@ async function RoomPage({ params, searchParams }: Props) {
           </p>
         </div>
 
-        <section aria-label="Room status" className={`flex flex-col gap-1 rounded-xl border-2 p-4 ${status.tone}`}>
+        <section
+          aria-label="Room status"
+          data-live-key={`room-status:${room.id}`}
+          data-live-version={`${status.headline}|${status.detail ?? ""}`}
+          className={`flex flex-col gap-1 rounded-xl border-2 p-4 ${status.tone}`}>
           <p data-testid="room-status" className="flex items-center gap-2 text-lg font-semibold">
             <Icon name={status.icon} className="size-5" />
             {status.headline}

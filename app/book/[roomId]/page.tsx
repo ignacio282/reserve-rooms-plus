@@ -89,7 +89,12 @@ async function RoomTimes({ params, searchParams }: { params: Promise<{ roomId: s
           ) : (
             <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
               {slots.map((s) => (
-                <li key={s.value}>
+                <li
+                  key={s.value}
+                  data-live-key={s.state === "past" ? undefined : `slot:${room.id}:${date}:${s.value}`}
+                  data-live-version={s.state}
+                  className="rounded-lg"
+                >
                   {s.state === "available" ? (
                     <Link
                       href={`/book/${room.id}?date=${date}&start=${s.value}#length-title`}

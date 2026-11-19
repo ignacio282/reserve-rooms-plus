@@ -10,6 +10,16 @@ export interface Interval {
 
 export const SLOT_MINUTES = 30;
 const SLOT_MS = SLOT_MINUTES * 60_000;
+/**
+ * 1-based CSS grid lines for [start, end) on a grid of `rowMs`-long rows that begins at `origin`.
+ * Start and end round the same way, so items sharing a boundary never share a row.
+ */
+export function gridRows(origin: Date, start: Date, end: Date, rowMs: number): { from: number; to: number } {
+  const line = (t: Date) => Math.round((t.getTime() - origin.getTime()) / rowMs) + 1;
+  const from = Math.max(1, line(start));
+  return { from, to: Math.max(from + 1, line(end)) };
+}
+
 const WEEKDAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
 /** Opening hours of a `YYYY-MM-DD` day as UTC instants, or null when closed. */

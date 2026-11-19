@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LiveIndicator } from "@/app/_components/LiveIndicator";
 import { connection } from "next/server";
 import { libraryDateString } from "@/lib/clock";
 import { formatDayLabel, formatTime } from "@/lib/format";
@@ -36,14 +37,18 @@ export const TYPE_LABEL: Record<RoomRow["type"], string> = {
   community: "Community room",
 };
 
-export function PatronHeader({ libraryName }: { libraryName: string }) {
+/** `live={false}` hides the indicator on pages that do not refresh live (see `isLivePaused`). */
+export function PatronHeader({ libraryName, live = true }: { libraryName: string; live?: boolean }) {
   return (
     <header className="border-b border-line bg-surface">
       <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-3 px-4 py-3">
         <Link href="/book" className="font-semibold">
           {libraryName}
         </Link>
-        <span className="text-sm text-muted">Book a room</span>
+        <div className="flex items-center gap-3">
+          {live ? <LiveIndicator /> : null}
+          <span className="text-sm text-muted">Book a room</span>
+        </div>
       </div>
     </header>
   );
